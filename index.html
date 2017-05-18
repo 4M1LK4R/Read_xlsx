@@ -1,0 +1,96 @@
+<script src="libs_excel/jquery.min.js"></script>
+<script src="libs_excel/xlsx.core.min.js"></script>
+<script>
+    var result;
+    function handleFile(e) {
+        //Get the files from Upload control
+        var files = e.target.files;
+        var i, f;
+        //Loop through files
+        for (i = 0, f = files[i]; i != files.length; ++i) {
+            var reader = new FileReader();
+            var name = f.name;
+            reader.onload = function (e) {
+                var data = e.target.result;
+
+                var workbook = XLSX.read(data, { type: 'binary' });
+
+                var sheet_name_list = workbook.SheetNames;
+                sheet_name_list.forEach(function (y) { /* iterate through sheets */
+                    //Convert the cell value to Json
+                    var roa = XLSX.utils.sheet_to_json(workbook.Sheets[y]);
+                    if (roa.length > 0) {
+                        result = roa;
+
+                    }
+                });
+                //Get the first column first cell value
+                // alert(result[0].Column1);
+            };
+            reader.readAsArrayBuffer(f);
+        }
+    }
+
+    //Change event to dropdownlist
+    $(document).ready(function () {
+        $('#files').change(handleFile);
+    });
+
+    function MostrarDatosExcel() {
+        console.log(result);
+        var cadena = "";
+        cadena = "<table>";
+        cadena += "<thead>";
+        cadena += "<tr>";
+        cadena += "<th>Nro</th>";
+        cadena += "<th>Nombre</th>";
+        cadena += "<th>Apellido</th>";
+        cadena += "<th>Nota</th>";        
+        cadena += "</tr>";
+        cadena += "</thead>";
+        cadena += "<tbody>";
+        for (var i = 0; i < result.length; i++) {
+            console.log(result[i]);
+
+
+            cadena += "<tr>";
+            cadena += "<td>" + result[i].Nro + "</td>";
+            cadena += "<td>" + result[i].Nombre + "</td>";
+            cadena += "<td>" + result[i].Apellido + "</td>";
+            cadena += "<td>" + result[i].Nota + "</td>";
+            cadena += "</tr>";
+        }
+        cadena += "</tbody>";
+        cadena += "</table>";
+
+        console.log(cadena);
+        $('#DatosExcel').html(cadena);
+
+    };
+
+    function Guardar() {
+
+        for (var i = 0; i < result.length; i++) {
+            console.log(result[i]);
+            var objeto = {
+            nro:result[i].Nro,
+            nom:result[i].Nombre,
+            ape:result[i].Apellido,
+            not:result[i].Nota
+            };
+            //getJSON("/Modulo/GuardarMateria", materia, function (obj) {
+                console.log(objeto+'registrado');
+            //});
+        }
+
+
+    };
+
+</script>
+
+<input type="file" id="files" name="files" />
+<br><br>
+<button onclick="MostrarDatosExcel();">Mostrar</button>
+<br><br><br><br><br>
+<button onclick="Guardar();">Guardar</button>
+<div id="DatosExcel"></div>
